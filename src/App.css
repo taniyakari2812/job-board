@@ -29,6 +29,9 @@
   text-align: left;
   height: 90px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .job-card:hover {
@@ -42,6 +45,12 @@
   text-overflow: ellipsis;
 }
 
+.job-card p {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .location {
   color: #666;
   font-size: 0.9rem;
