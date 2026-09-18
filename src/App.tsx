@@ -16,6 +16,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 10;
 
   useEffect(() => {
     fetch("https://remotive.com/api/remote-jobs?limit=50")
@@ -39,7 +41,20 @@ function App() {
       job.company_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <div className="center">Loading jobs...</div>;
+  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+  const paginatedJobs = filteredJobs.slice(
+    (currentPage - 1) * jobsPerPage,
+    currentPage * jobsPerPage
+  );
+
+  if (loading)
+    return (
+      <div className="center">
+        <div className="spinner"></div>
+        <p>Loading jobs...</p>
+      </div>
+    );
+
   if (error) return <div className="center">Error: {error}</div>;
 
   return (
@@ -49,7 +64,10 @@ function App() {
         type="text"
         placeholder="Search by title or company..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setCurrentPage(1);
+        }}
         className="search-input"
       />
 
@@ -69,20 +87,44 @@ function App() {
             Apply here
           </a>
         </div>
+      ) : filteredJobs.length === 0 ? (
+        <p className="no-results">No jobs found matching "{search}"</p>
       ) : (
-        <div className="job-list">
-          {filteredJobs.map((job) => (
-            <div
-              key={job.id}
-              className="job-card"
-              onClick={() => setSelectedJob(job)}
-            >
-              <h3>{job.title}</h3>
-              <p>{job.company_name}</p>
-              <p className="location">{job.candidate_required_location}</p>
+        <>
+          <div className="job-list">
+            {paginatedJobs.map((job) => (
+              <div
+                key={job.id}
+                className="job-card"
+                onClick={() => setSelectedJob(job)}
+              >
+                <h3>{job.title}</h3>
+                <p>{job.company_name}</p>
+                <p className="location">{job.candidate_required_location}</p>
+              </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                Next
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
